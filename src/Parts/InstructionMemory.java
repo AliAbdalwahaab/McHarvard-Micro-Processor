@@ -13,6 +13,10 @@ public class InstructionMemory {
         this.address = address;
     }
 
+    public short getInstruction(int address) {
+        return instructions[address];
+    }
+
     public String toString() {
         String r = "Instruction Memory Contents:\n";
         for (int i = 0; i < instructions.length; i++) {

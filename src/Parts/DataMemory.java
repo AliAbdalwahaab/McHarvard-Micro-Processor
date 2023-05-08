@@ -11,6 +11,9 @@ public class DataMemory {
     public void setAddress(int address) {
         this.address = address;
     }
+    public byte getData(int address) {
+        return data[address];
+    }
 
     public String toString() {
         String r = "Data Memory Contents:\n";
