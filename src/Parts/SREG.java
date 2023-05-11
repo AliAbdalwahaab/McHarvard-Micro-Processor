@@ -67,6 +67,18 @@ public class SREG {
         return (byte) (valToReturn & 0b00000001);
     }
 
+    public byte getAllFlags() {
+        return sreg;
+    }
+
+    public void SetAllFlags(byte cFlag, byte vFlag, byte nFlag, byte sFlag, byte zFlag) {
+        setCarryFlag(cFlag);
+        setOverflowFlag(vFlag);
+        setNegativeFlag(nFlag);
+        setZeroFlag(zFlag);
+        setSignFlag(sFlag);
+    }
+
 
 
 
