@@ -1,57 +1,70 @@
 package src.Parts;
 
 public class SREG {
-    private byte value = 0b00000000;
+    private byte sreg = 0b00000000;
 
     //decide on params later
     //set Carry Flag (C)
-    public void setCarryFlag() {
-
+    public void setCarryFlag(byte value) {
+        value = (byte) (value << 4);
+        sreg = (byte) (sreg | value);
     }
 
     //set Two's Complement Overflow Flag (V)
-    public void setOverflowFlag() {
-
+    public void setOverflowFlag(byte value) {
+        value = (byte) (value << 3);
+        sreg = (byte) (sreg | value);
     }
 
     //set Sign Flag (S)
-    public void setSignFlag() {
-
+    //the logic to get this value should be implemented in the ALU
+    public void setSignFlag(byte value) {
+        value = (byte) (value << 1);
+        sreg = (byte) (sreg | value);
     }
 
     //set Negative Flag (N)
-    public void setNegativeFlag() {
-
+    public void setNegativeFlag(byte value) {
+        value = (byte) (value << 2);
+        sreg = (byte) (sreg | value);
     }
 
     //set Zero Flag (Z)
-    public void setZeroFlag() {
-
+    public void setZeroFlag(byte value) {
+        sreg = (byte) (sreg | value);
     }
 
     //get Carry Flag (C)
     public byte getCarryFlag() {
-        return 0;
+        byte valToReturn = sreg;
+        return (byte) (valToReturn >> 4);
     }
 
     //get Two's Complement Overflow Flag (V)
     public byte getOverflowFlag() {
-        return 0;
+        byte valToReturn = sreg;
+        valToReturn = (byte) (valToReturn >> 3);
+        return (byte) (valToReturn & 0b00000001);
     }
 
     //get Negative Flag (N)
     public byte getNegativeFlag() {
-        return 0;
+        byte valToReturn = sreg;
+        valToReturn = (byte) (valToReturn >> 2);
+        return (byte) (valToReturn & 0b00000001);
     }
 
     //get Zero Flag (Z)
     public byte getZeroFlag() {
-        return 0;
+        byte valToReturn = sreg;
+        return (byte) (valToReturn & 0b00000001);
     }
 
     //get Sign Flag (S)
     public byte getSignFlag() {
-        return 0;
+        byte valToReturn = sreg;
+        valToReturn = (byte) (valToReturn >> 1);
+        return (byte) (valToReturn & 0b00000001);
     }
 
 
