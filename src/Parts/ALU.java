@@ -20,8 +20,8 @@ public class ALU {
     }
 
     //will be used to compute new value of pc in case of branch or jr
-    public short ALUAdder(short pc, byte imm) {
-        return 0;
+    public static short ALUAdder(short pc, byte imm) {
+        return (short) (pc + imm);
     }
 
 
