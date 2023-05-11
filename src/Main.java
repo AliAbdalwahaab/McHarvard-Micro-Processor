@@ -2,15 +2,15 @@ package src;
 
 public class Main {
 
-    public void fetch() {
+    public static void fetch() {
 
     }
 
-    public void decode(){
+    public static void decode(){
 
     }
 
-    public void execute() {
+    public static void execute() {
 
     }
 
