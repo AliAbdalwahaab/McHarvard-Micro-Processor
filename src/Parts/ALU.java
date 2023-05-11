@@ -5,7 +5,7 @@ public class ALU {
     private byte operand1;
     private byte operand2;
     private short result;
-    private short opcode;
+    private byte opcode;
 
 
 }
