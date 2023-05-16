@@ -79,9 +79,4 @@ public class SREG {
         setZeroFlag(zFlag);
         setSignFlag(sFlag);
     }
-
-
-
-
-
 }
