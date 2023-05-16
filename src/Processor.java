@@ -97,10 +97,10 @@ public class Processor {
                         break;
                 }
 
-                if (instrParts[1].charAt(0) == 'R' || instrParts[1].charAt(0) == 'r') {
-                    byte regNum = Byte.parseByte(instrParts[1].substring(1));
+                //operand1
+                byte op1 = Byte.parseByte(instrParts[1].substring(1));
 
-                }
+
             }
             fr.close();
         } catch (FileNotFoundException e) {
