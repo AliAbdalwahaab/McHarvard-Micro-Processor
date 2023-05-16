@@ -99,6 +99,10 @@ public class Processor {
 
                 //operand1
                 byte op1 = Byte.parseByte(instrParts[1].substring(1));
+                String op1Str = ""+Integer.toBinaryString(op1);
+
+                //add 4 bits of op1 to instruction
+                instruction += op1Str.substring(op1Str.length()-4);
 
 
             }
