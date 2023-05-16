@@ -7,10 +7,8 @@ public class ALU {
     private short result;
     private byte opcode;
 
-    public ALU(byte operand1, byte operand2, byte opcode) {
-        this.operand1 = operand1;
-        this.operand2 = operand2;
-        this.opcode = opcode;
+    public ALU() {
+
         sreg = new SREG();
     }
 
@@ -181,6 +179,18 @@ public class ALU {
     public static short ALUAdder(short pc, byte imm) {
         return (short) (pc + imm);
     }
+
+    //set operands
+    public void setOperands(byte operand1, byte operand2) {
+        this.operand1 = operand1;
+        this.operand2 = operand2;
+    }
+
+    //set opcode
+    public void setOpcode(byte opcode) {
+        this.opcode = opcode;
+    }
+
 
 
 }
