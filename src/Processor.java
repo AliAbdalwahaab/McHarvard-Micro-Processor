@@ -39,8 +39,68 @@ public class Processor {
             String line;
             while((line=br.readLine())!=null)
             {
-                String[] splitted = line.split(" ");
+                String[] instrParts = line.split(" ");
                 String instruction = "";
+
+                //opcode
+                switch(instrParts[0]) {
+                    case "ADD":
+                    case "add": instruction = "0000"; break;
+                    case "SUB":
+                    case "sub": instruction = "0001"; break;
+                    case "MUL":
+                    case "mul": instruction = "0010"; break;
+                    case "LDI":
+                    case "ldi": instruction = "0011"; break;
+                    case "BEQZ":
+                    case "beqz": instruction = "0100"; break;
+                    case "AND":
+                    case "and": instruction = "0101"; break;
+                    case "OR":
+                    case "or": instruction = "0110"; break;
+                    case "JR":
+                    case "jr": instruction = "0111"; break;
+                    case "SLC":
+                    case "slc": instruction = "1000"; break;
+                    case "SRC":
+                    case "src": instruction = "1001"; break;
+                    case "LB":
+                    case "lb": instruction = "1010"; break;
+                    case "SB":
+                    case "sb": instruction = "1011"; break;
+                    default: switch(instrParts[1]) {
+                        case "ADD":
+                        case "add": instruction = "0000"; break;
+                        case "SUB":
+                        case "sub": instruction = "0001"; break;
+                        case "MUL":
+                        case "mul": instruction = "0010"; break;
+                        case "LDI":
+                        case "ldi": instruction = "0011"; break;
+                        case "BEQZ":
+                        case "beqz": instruction = "0100"; break;
+                        case "AND":
+                        case "and": instruction = "0101"; break;
+                        case "OR":
+                        case "or": instruction = "0110"; break;
+                        case "JR":
+                        case "jr": instruction = "0111"; break;
+                        case "SLC":
+                        case "slc": instruction = "1000"; break;
+                        case "SRC":
+                        case "src": instruction = "1001"; break;
+                        case "LB":
+                        case "lb": instruction = "1010"; break;
+                        case "SB":
+                        case "sb": instruction = "1011"; break;
+                    }
+                        break;
+                }
+
+                if (instrParts[1].charAt(0) == 'R' || instrParts[1].charAt(0) == 'r') {
+                    byte regNum = Byte.parseByte(instrParts[1].substring(1));
+
+                }
             }
             fr.close();
         } catch (FileNotFoundException e) {
