@@ -2,16 +2,40 @@ package src.Parts;
 
 public class DataMemory {
     private byte[] data = new byte[2048];
-    private int address;
+    private short address;
+    private boolean memWrite;
+    private boolean memRead;
 
-    public int getAddress() {
+    public void setMemRead(boolean memRead) {
+        this.memRead = memRead;
+    }
+
+    public void setMemWrite(boolean memWrite) {
+        this.memWrite = memWrite;
+    }
+
+    public void setData(byte data) {
+        if (memWrite) {
+            this.data[address] = data;
+        }
+    }
+
+    public boolean isMemRead() {
+        return memRead;
+    }
+
+    public boolean isMemWrite() {
+        return memWrite;
+    }
+
+    public short getAddress() {
         return address;
     }
 
-    public void setAddress(int address) {
+    public void setAddress(short address) {
         this.address = address;
     }
-    public byte getData(int address) {
+    public byte getData() {
         return data[address];
     }
 

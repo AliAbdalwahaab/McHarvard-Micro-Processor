@@ -69,6 +69,7 @@ public class SREG {
 
     public byte getAllFlags() {
         return sreg;
+        //max value should be 31 (0b00011111) otherwise there is a problem
     }
 
     public void SetAllFlags(byte cFlag, byte vFlag, byte nFlag, byte sFlag, byte zFlag) {
