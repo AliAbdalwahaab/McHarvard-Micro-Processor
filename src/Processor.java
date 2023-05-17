@@ -165,7 +165,7 @@ public class Processor {
                 //operand2
                 //it is another register in case of ADD, SUB, MUL, AND, OR, JR
                 //it is an immediate value in case of LDI, BEQZ, SLC, SRC, LB, SB
-                if (isResOfBranch) {
+                if (!isResOfBranch) {
 
                     if (instrParts[0].equals("ADD") || instrParts[0].equals("add")
                             || instrParts[0].equals("SUB") || instrParts[0].equals("sub")
@@ -192,6 +192,19 @@ public class Processor {
 
                         //add 4 bits of op2 to instruction
                         instruction += op2Str.substring(2);
+                    } else { //this is a branch
+                      String line2;
+                      byte relAdd = 1; //variable that will get us the relative address
+                      while ((line2=br.readLine())!=null) {
+                          String[] theLine = line.split(" ");
+                          if (theLine[0].substring(0,theLine[0].length()-1).equals(instrParts[2])) { //i added the substring to exclude the ':' from the comparison
+                              byte op2 = relAdd;
+                              String op2Str = "" + Integer.toBinaryString(op2);
+                              instruction += op2Str.substring(2);
+                              break;
+                          }
+                          relAdd++;
+                      }
                     }
 
                 } else {
@@ -223,6 +236,19 @@ public class Processor {
 
                         //add 4 bits of op2 to instruction
                         instruction += op2Str.substring(2);
+                    } else {
+                        String line2;
+                        byte relAdd = 1; //variable that will get us the relative address
+                        while ((line2=br.readLine())!=null) {
+                            String[] theLine = line.split(" ");
+                            if (theLine[0].substring(0,theLine[0].length()-1).equals(instrParts[3])) { //i added the substring to exclude the ':' from the comparison
+                                byte op2 = relAdd;
+                                String op2Str = "" + Integer.toBinaryString(op2);
+                                instruction += op2Str.substring(2);
+                                break;
+                            }
+                            relAdd++;
+                        }
                     }
                 }
             }
