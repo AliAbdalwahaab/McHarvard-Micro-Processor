@@ -3,18 +3,22 @@ package src.Parts;
 public class InstructionMemory {
 
     private short[] instructions = new short[1024];
-    private int address;
+    private short address;
 
-    public int getAddress() {
+    public short getAddress() {
         return address;
     }
 
-    public void setAddress(int address) {
+    public void setAddress(short address) {
         this.address = address;
     }
 
-    public short getInstruction(int address) {
+    public short getInstruction(short address) {
         return instructions[address];
+    }
+
+    public void setInstruction(short instruction) {
+        instructions[address] = instruction;
     }
 
     public String toString() {

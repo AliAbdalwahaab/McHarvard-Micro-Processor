@@ -38,7 +38,9 @@ public class Processor {
             BufferedReader br=new BufferedReader(fr);  //creates a buffering character input stream
             String line;
             boolean isResOfBranch = false; //will be true if there is a label at the beginning of an instruction
+            short instrCount = 0;
             while((line=br.readLine())!=null) {
+
                 String[] instrParts = line.split(" ");
                 String instruction = "";
 
@@ -251,9 +253,16 @@ public class Processor {
                         }
                     }
                 }
+
+                //add the full instruction string to the instruction memory
+                short fullInstruction = Short.parseShort(instrParts[3]);
+                instructionMem.setAddress(instrCount);
+                instructionMem.setInstruction(fullInstruction);
+                instrCount++;
             }
 
             fr.close();
+            System.out.println("Parsed all of the instructions");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
