@@ -199,7 +199,7 @@ public class Processor {
                       byte relAdd = 1; //variable that will get us the relative address
                       while ((line2=br.readLine())!=null) {
                           String[] theLine = line.split(" ");
-                          if (theLine[0].substring(0,theLine[0].length()-1).equals(instrParts[2])) { //i added the substring to exclude the ':' from the comparison
+                          if (theLine[0].substring(0,theLine[0].length()-1).equalsIgnoreCase(instrParts[2])) { //i added the substring to exclude the ':' from the comparison
                               byte op2 = relAdd;
                               String op2Str = "" + Integer.toBinaryString(op2);
                               instruction += op2Str.substring(2);
@@ -243,7 +243,7 @@ public class Processor {
                         byte relAdd = 1; //variable that will get us the relative address
                         while ((line2=br.readLine())!=null) {
                             String[] theLine = line.split(" ");
-                            if (theLine[0].substring(0,theLine[0].length()-1).equals(instrParts[3])) { //i added the substring to exclude the ':' from the comparison
+                            if (theLine[0].substring(0,theLine[0].length()-1).equalsIgnoreCase(instrParts[3])) { //i added the substring to exclude the ':' from the comparison
                                 byte op2 = relAdd;
                                 String op2Str = "" + Integer.toBinaryString(op2);
                                 instruction += op2Str.substring(2);
