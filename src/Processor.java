@@ -45,103 +45,79 @@ public class Processor {
                 String instruction = "";
 
                 //opcode
-                switch (instrParts[0]) {
-                    case "ADD":
+                switch (instrParts[0].toLowerCase()) {
                     case "add":
                         instruction = "0000";
                         break;
-                    case "SUB":
                     case "sub":
                         instruction = "0001";
                         break;
-                    case "MUL":
                     case "mul":
                         instruction = "0010";
                         break;
-                    case "LDI":
                     case "ldi":
                         instruction = "0011";
                         break;
-                    case "BEQZ":
                     case "beqz":
                         instruction = "0100";
                         break;
-                    case "AND":
                     case "and":
                         instruction = "0101";
                         break;
-                    case "OR":
                     case "or":
                         instruction = "0110";
                         break;
-                    case "JR":
                     case "jr":
                         instruction = "0111";
                         break;
-                    case "SLC":
                     case "slc":
                         instruction = "1000";
                         break;
-                    case "SRC":
                     case "src":
                         instruction = "1001";
                         break;
-                    case "LB":
                     case "lb":
                         instruction = "1010";
                         break;
-                    case "SB":
                     case "sb":
                         instruction = "1011";
                         break;
                     default: //there is a label at the beginning of the instruction
                         isResOfBranch = true;
-                        switch (instrParts[1]) {
-                            case "ADD":
+                        switch (instrParts[1].toLowerCase()) {
                             case "add":
                                 instruction = "0000";
                                 break;
-                            case "SUB":
                             case "sub":
                                 instruction = "0001";
                                 break;
-                            case "MUL":
                             case "mul":
                                 instruction = "0010";
                                 break;
-                            case "LDI":
                             case "ldi":
                                 instruction = "0011";
                                 break;
-                            case "BEQZ":
                             case "beqz":
                                 instruction = "0100";
                                 break;
-                            case "AND":
                             case "and":
                                 instruction = "0101";
                                 break;
-                            case "OR":
                             case "or":
                                 instruction = "0110";
                                 break;
-                            case "JR":
                             case "jr":
                                 instruction = "0111";
                                 break;
-                            case "SLC":
                             case "slc":
                                 instruction = "1000";
                                 break;
-                            case "SRC":
                             case "src":
                                 instruction = "1001";
                                 break;
-                            case "LB":
                             case "lb":
                                 instruction = "1010";
                                 break;
-                            case "SB":
                             case "sb":
                                 instruction = "1011";
                                 break;
@@ -169,12 +145,12 @@ public class Processor {
                 //it is an immediate value in case of LDI, BEQZ, SLC, SRC, LB, SB
                 if (!isResOfBranch) {
 
-                    if (instrParts[0].equals("ADD") || instrParts[0].equals("add")
-                            || instrParts[0].equals("SUB") || instrParts[0].equals("sub")
-                            || instrParts[0].equals("MUL") || instrParts[0].equals("mul")
-                            || instrParts[0].equals("AND") || instrParts[0].equals("and")
-                            || instrParts[0].equals("OR") || instrParts[0].equals("or")
-                            || instrParts[0].equals("JR") || instrParts[0].equals("jr")) {
+                    if (instrParts[0].equalsIgnoreCase("add")
+                            || instrParts[0].equalsIgnoreCase("sub")
+                            || instrParts[0].equalsIgnoreCase("mul")
+                            || instrParts[0].equalsIgnoreCase("and")
+                            || instrParts[0].equalsIgnoreCase("or")
+                            || instrParts[0].equalsIgnoreCase("jr")) {
 
 
                         byte op2 = Byte.parseByte(instrParts[2].substring(1));
@@ -183,11 +159,11 @@ public class Processor {
                         //add 4 bits of op2 to instruction
                         instruction += op2Str.substring(2);
 
-                    } else if (instrParts[0].equals("LDI") || instrParts[0].equals("ldi")
-                            || instrParts[0].equals("SLC") || instrParts[0].equals("slc")
-                            || instrParts[0].equals("SRC") || instrParts[0].equals("src")
-                            || instrParts[0].equals("LB") || instrParts[0].equals("lb")
-                            || instrParts[0].equals("SB") || instrParts[0].equals("sb")) {
+                    } else if (instrParts[0].equalsIgnoreCase("ldi")
+                            || instrParts[0].equalsIgnoreCase("slc")
+                            || instrParts[0].equalsIgnoreCase("src")
+                            || instrParts[0].equalsIgnoreCase("lb")
+                            || instrParts[0].equalsIgnoreCase("sb")) {
 
                         byte op2 = Byte.parseByte(instrParts[2]);
                         String op2Str = "" + Integer.toBinaryString(op2);
@@ -211,12 +187,12 @@ public class Processor {
 
                 } else {
 
-                    if (instrParts[1].equals("ADD") || instrParts[1].equals("add")
-                            || instrParts[1].equals("SUB") || instrParts[1].equals("sub")
-                            || instrParts[1].equals("MUL") || instrParts[1].equals("mul")
-                            || instrParts[1].equals("AND") || instrParts[1].equals("and")
-                            || instrParts[1].equals("OR") || instrParts[1].equals("or")
-                            || instrParts[1].equals("JR") || instrParts[1].equals("jr")) {
+                    if (instrParts[1].equalsIgnoreCase("add")
+                            || instrParts[1].equalsIgnoreCase("sub")
+                            || instrParts[1].equalsIgnoreCase("mul")
+                            || instrParts[1].equalsIgnoreCase("and")
+                            || instrParts[1].equalsIgnoreCase("or")
+                            || instrParts[1].equalsIgnoreCase("jr")) {
                         //I am also covering instrParts[1] because
                         // it will correspond to the operation in case this instruction
                         // has a label before it due to a branch
@@ -227,11 +203,11 @@ public class Processor {
                         //add 4 bits of op2 to instruction
                         instruction += op2Str.substring(2);
 
-                    } else if (instrParts[1].equals("LDI") || instrParts[1].equals("ldi")
-                            || instrParts[1].equals("SLC") || instrParts[1].equals("slc")
-                            || instrParts[1].equals("SRC") || instrParts[1].equals("src")
-                            || instrParts[1].equals("LB") || instrParts[1].equals("lb")
-                            || instrParts[1].equals("SB") || instrParts[1].equals("sb")) {
+                    } else if (instrParts[1].equalsIgnoreCase("ldi")
+                            || instrParts[1].equalsIgnoreCase("slc")
+                            || instrParts[1].equalsIgnoreCase("src")
+                            || instrParts[1].equalsIgnoreCase("lb")
+                            || instrParts[1].equalsIgnoreCase("sb")) {
 
                         byte op2 = Byte.parseByte(instrParts[3]);
                         String op2Str = "" + Integer.toBinaryString(op2);
