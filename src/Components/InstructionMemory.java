@@ -14,7 +14,11 @@ public class InstructionMemory {
     }
 
     public void addInstruction(short instruction) {
-        instructions[instrCount++] = instruction;
+        if (instrCount < instructions.length) {
+            instructions[instrCount++] = instruction;
+        } else {
+            System.out.println("Instruction Memory is full!");
+        }
     }
 
     public short getInstrCount() {

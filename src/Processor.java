@@ -1,5 +1,9 @@
 import Components.*;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
 public class Processor {
     ALU alu;
     RegisterFile registerFile;
@@ -7,33 +11,112 @@ public class Processor {
     SREG sreg;
     DataMemory dataMemory;
     InstructionMemory instructionMemory;
+    int cycles;
+    short currInstruction = -1;
+    boolean lastInstruction = false;
+    byte operand1;
+    byte operand2;
+    boolean op1;
+    boolean op2;
 
     public Processor() {
-        alu = new ALU();
-        registerFile = new RegisterFile();
-        pc = new PC();
-        sreg = new SREG();
-        dataMemory = new DataMemory();
-        instructionMemory = new InstructionMemory();
+        this.alu = new ALU();
+        this.registerFile = new RegisterFile();
+        this.pc = new PC();
+        this.sreg = new SREG();
+        this.dataMemory = new DataMemory();
+        this.instructionMemory = new InstructionMemory();
+        this.cycles = 1;
+        this.op1 = false;
+        this.op2 = false;
     }
 
     public void fetch() {
         // fetch instruction from instruction memory
-        // increment PC
+        short currAddress = pc.getAddress();
+        if (currAddress == instructionMemory.getInstrCount() - 1) { // last instruction
+            lastInstruction = true;
+        }
+
+        if (currAddress < instructionMemory.getInstrCount()) { // pipeline stall [ending cycles]
+            currInstruction = instructionMemory.getInstruction(currAddress);
+            pc.increment();
+        }
     }
 
     public void decode() {
-        // decode instruction
-        // store operands in registers
+        if (currInstruction != -1) { // TODO pipeline stall [TBD starting and ending cycles]
+            // decode instruction
+
+
+            // store operands
+        }
     }
 
     public void execute() {
-        // execute instruction
-        // store result in register
+        if (op1) { // TODO pipeline stall [TBD starting cycles]
+            // use operands and opcode to execute instruction
+
+            // store result in register
+        }
     }
 
-    public void parseAssembly(String assembly) {
-        // parse assembly code
-        // store instructions in instruction memory
+    public void executeProgram() {
+        while (!lastInstruction) {
+            System.out.println("Cycle: " + cycles);
+            fetch();
+            decode();
+            execute();
+            cycles++;
+        }
+    }
+
+    public short parseAssemblyLine(String assemblyLine) {
+
+        String[] split = assemblyLine.split(" ");
+        short instruction = 0;
+
+        // opcode
+        switch (split[0].toUpperCase()) {
+            case "ADD": instruction = (short) (instruction | (0x0 << 12));break;
+            case "SUB": instruction = (short) (instruction | (0x1 << 12));break;
+            case "MUL": instruction = (short) (instruction | (0x2 << 12));break;
+            case "LDI": instruction = (short) (instruction | (0x3 << 12));break;
+            case "BEQZ": instruction = (short) (instruction | (0x4 << 12));break;
+            case "AND": instruction = (short) (instruction | (0x5 << 12));break;
+            case "OR": instruction = (short) (instruction | (0x6 << 12));break;
+            case "JR": instruction = (short) (instruction | (0x7 << 12));break;
+            case "SLC": instruction = (short) (instruction | (0x8 << 12));break;
+            case "SRC":instruction = (short) (instruction | (0x9 << 12));break;
+            case "LB":instruction = (short) (instruction | (0xA << 12));break;
+            case "SB":instruction = (short) (instruction | (0xB << 12));break;
+        }
+
+        // operand 1
+        instruction = (short) (instruction | ((Byte.parseByte(split[1].substring(1)) & 0x3F) << 6));
+
+        // operand 2
+        byte opcode = (byte) (instruction >>> 12);
+
+        if (opcode >= 8 && opcode <= 11 || opcode == 3 || opcode == 4) { // I-Type
+            instruction = (short) (instruction | (Byte.parseByte(split[2]) & 0x3F));
+        } else { // R-Type
+            instruction = (short) (instruction | (Byte.parseByte(split[2].substring(1)) & 0x3F));
+        }
+
+        return instruction;
+
+    }
+
+
+
+    public void loadAssemblyAndParse() throws IOException {
+        // load assembly code from text file
+        BufferedReader br = new BufferedReader(new FileReader("src/assembly.txt"));
+        while (br.ready()) {
+            String line = br.readLine();
+            short instruction = parseAssemblyLine(line);
+            instructionMemory.addInstruction(instruction);
+        }
     }
 }
