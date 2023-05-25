@@ -79,4 +79,8 @@ public class SREG {
         setZeroFlag(zFlag);
         setSignFlag(sFlag);
     }
+
+    public void nullifyRegister() {
+        this.sreg = 0b00000000;
+    }
 }

@@ -1,7 +1,5 @@
 import Components.*;
 
-import java.security.PublicKey;
-
 public class Processor {
     ALU alu;
     RegisterFile registerFile;
@@ -21,8 +19,6 @@ public class Processor {
 
     public void fetch() {
         // fetch instruction from instruction memory
-        // increment PC
-        // store instruction in IR
         // increment PC
     }
 

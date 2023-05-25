@@ -8,7 +8,6 @@ public class ALU {
     private byte opcode;
 
     public ALU() {
-
         sreg = new SREG();
     }
 
@@ -27,6 +26,7 @@ public class ALU {
         //10: Load Byte (R1 = MEM[IMM]) we return the address then we use it to fetch from datamem
         //11: Store Byte (MEM[IMM] = R1) we return the address then we use it to store in datamem
 
+        sreg.nullifyRegister();
         switch(opcode) {
             case 0: //add
                 result = (short) (operand1 + operand2); //we will store the result in R1 after we return it

@@ -11,6 +11,10 @@ public class PC {
         this.address = address;
     }
 
+    public void increment() {
+        address++;
+    }
+
     public String toString() {
         return "PC: " + address;
     }

@@ -2,7 +2,6 @@ package Components;
 
 public class DataMemory {
     private byte[] data = new byte[2048];
-    private short address;
     private boolean memWrite;
     private boolean memRead;
 
@@ -14,7 +13,7 @@ public class DataMemory {
         this.memWrite = memWrite;
     }
 
-    public void setData(byte data) {
+    public void setData(short address, byte data) {
         if (memWrite) {
             this.data[address] = data;
         }
@@ -28,14 +27,7 @@ public class DataMemory {
         return memWrite;
     }
 
-    public short getAddress() {
-        return address;
-    }
-
-    public void setAddress(short address) {
-        this.address = address;
-    }
-    public byte getData() {
+    public byte getData(short address) {
         return data[address];
     }
 
