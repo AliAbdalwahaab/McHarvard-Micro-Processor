@@ -1,5 +1,4 @@
 import Components.*;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -13,9 +12,7 @@ public class Processor {
     DataMemory dataMemory;
     InstructionMemory instructionMemory;
     int cycles;
-    boolean lastInstruction = false;
-
-    // TODO: Discuss BUS Component holds 3 diff versions of {instruction, decode_data, execute}
+    boolean lastInstruction;
 
     public Processor() {
         this.alu = new ALU();
@@ -32,17 +29,14 @@ public class Processor {
         // fetch instruction from instruction memory
         short currAddress = pc.getAddress();
 
-        if (currAddress >= instructionMemory.getInstrCount()) {
-            PLNRegsBus.insertIntoPlnInstructions((short)-1);
-        }
+        if (currAddress > instructionMemory.getInstrCount() - 1) {
+            PLNRegsBus.insertIntoPlnInstructions((short) -1);
 
-        else if (currAddress < instructionMemory.getInstrCount()) { // pipeline stall [ending cycles]
+        } else if (currAddress <= instructionMemory.getInstrCount() - 1) { // pipeline stall [ending cycles]
             short currInstruction = instructionMemory.getInstruction(currAddress);
             PLNRegsBus.insertIntoPlnInstructions(currInstruction);
             pc.increment();
         }
-
-
     }
 
     public void decode() {
@@ -70,6 +64,12 @@ public class Processor {
             // set operand1, operand2, opcode in ALU
             alu.setOpcode(opcode);
             alu.setOperands(operand1, operand2);
+
+            // set operands and opcode in PLNRegsBus
+            PLNRegsBus.setDecodeOperands(opcode, operand1, operand2);
+        } else if (PLNRegsBus.getExecuteInstruction() != -1) {
+            // shift to Exec stage
+            PLNRegsBus.setDecodeOperands(opcode, operand1, operand2);
         }
     }
 
@@ -90,7 +90,7 @@ public class Processor {
                 // flush fetch and decode
                 PLNRegsBus.flushFetchDecode();
                 // set PC to result
-                pc.setAddress(alu.ALUAdder( pc.getAddress(),(byte) result));
+                pc.setAddress(alu.ALUAdder(pc.getAddress(), (byte) result));
             }
 
             else if (ExecData[0] == 7) {
@@ -107,14 +107,12 @@ public class Processor {
                          registerFile.setWriteData(ExecData[1], (byte) result);
                          registerFile.setRegWrite(false);
                         break;
-
                     case 10: // LB
                         dataMemory.getData((byte) result);
                         registerFile.setRegWrite(true);
                         registerFile.setWriteData(ExecData[1], (byte) result);
                         registerFile.setRegWrite(false);
                         break;
-
                     case 11: // SB
                         registerFile.setReadReg1(ExecData[1]);
                         dataMemory.setMemWrite(true);
@@ -129,10 +127,7 @@ public class Processor {
                 lastInstruction = true;
                 PLNRegsBus.insertIntoPlnInstructions((short)-1);
             }
-
-
         }
-
     }
 
     public void executeProgram() {

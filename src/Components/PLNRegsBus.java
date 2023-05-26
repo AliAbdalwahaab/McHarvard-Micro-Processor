@@ -14,25 +14,17 @@ public class PLNRegsBus {
     }
     //Set the plnInstructions array to the current instructions present in the instruction memory
     public void insertIntoPlnInstructions(short instruction) {
-
-        while (instruction != -1){
-            if (plnInstructions[0] + plnInstructions[1] + plnInstructions[2] != -3){
-
-                plnInstructions[2] = plnInstructions[1];
-                plnInstructions[1] = plnInstructions[0];
-                plnInstructions[0] = (byte) (instruction & 0xFF);
-                instruction = (short) (instruction >> 8);
-            }
-            else{
-
-                plnInstructions[0] = (byte) (instruction & 0xFF);
-                instruction = (short) (instruction >> 8);
-            }
+        if (plnInstructions[0] + plnInstructions[1] + plnInstructions[2] != -3){
+            plnInstructions[2] = plnInstructions[1];
+            plnInstructions[1] = plnInstructions[0];
+            plnInstructions[0] = (byte) (instruction & 0xFF);
+        } else {
+            plnInstructions[0] = (byte) (instruction & 0xFF);
         }
     }
 
-    public byte getFetchInstruction(short[] instructions){
-         return (byte) (instructions[0] & 0xFF);
+    public byte getFetchInstruction(){
+         return (byte) (plnInstructions[0] & 0xFF);
     }
 
     public byte getDecodeInstruction(){
@@ -44,15 +36,23 @@ public class PLNRegsBus {
     }
 
     public void setDecodeOperands (byte opCode, byte op1, byte op2){
-        //Shift the current values to the right
-        plnOpCodes[1] = plnOpCodes[0];
-        plnOp1[1] = plnOp1[0];
-        plnOp2[1] = plnOp2[0];
+        // check if the current values are not -1
+        if (plnOpCodes[0] + plnOp1[0] + plnOp2[0] == -3){
+            //Shift the current values to the right
+             plnOpCodes[0] = opCode;
+             plnOp1[0] = op1;
+             plnOp2[0] = op2;
+        } else {
+            //Shift the current values to the right
+            plnOpCodes[1] = plnOpCodes[0];
+            plnOp1[1] = plnOp1[0];
+            plnOp2[1] = plnOp2[0];
 
-        //Set the new values of the next stage
-        plnOpCodes[0] = opCode;
-        plnOp1[0] = op1;
-        plnOp2[0] = op2;
+            //Set the new values of the next stage
+            plnOpCodes[0] = opCode;
+            plnOp1[0] = op1;
+            plnOp2[0] = op2;
+        }
     }
 
     public byte[] getExecuteData(){
