@@ -1,9 +1,8 @@
 package Components;
 
 public class SREG {
-    private byte sreg = 0b00000000;
+    private byte sreg = 0x00; //000CVNSZ
 
-    //decide on params later
     //set Carry Flag (C)
     public void setCarryFlag(byte value) {
         value = (byte) (value << 4);
@@ -37,34 +36,34 @@ public class SREG {
     //get Carry Flag (C)
     public byte getCarryFlag() {
         byte valToReturn = sreg;
-        return (byte) (valToReturn >> 4);
+        return (byte) ((valToReturn >>> 4) & 0x01);
     }
 
     //get Two's Complement Overflow Flag (V)
     public byte getOverflowFlag() {
         byte valToReturn = sreg;
-        valToReturn = (byte) (valToReturn >> 3);
-        return (byte) (valToReturn & 0b00000001);
+        valToReturn = (byte) (valToReturn >>> 3);
+        return (byte) (valToReturn & 0x01);
     }
 
     //get Negative Flag (N)
     public byte getNegativeFlag() {
         byte valToReturn = sreg;
-        valToReturn = (byte) (valToReturn >> 2);
-        return (byte) (valToReturn & 0b00000001);
+        valToReturn = (byte) (valToReturn >>> 2);
+        return (byte) (valToReturn & 0x01);
     }
 
     //get Zero Flag (Z)
     public byte getZeroFlag() {
         byte valToReturn = sreg;
-        return (byte) (valToReturn & 0b00000001);
+        return (byte) (valToReturn & 0x01);
     }
 
     //get Sign Flag (S)
     public byte getSignFlag() {
         byte valToReturn = sreg;
-        valToReturn = (byte) (valToReturn >> 1);
-        return (byte) (valToReturn & 0b00000001);
+        valToReturn = (byte) (valToReturn >>> 1);
+        return (byte) (valToReturn & 0x01);
     }
 
     public byte getAllFlags() {
@@ -81,6 +80,6 @@ public class SREG {
     }
 
     public void nullifyRegister() {
-        this.sreg = 0b00000000;
+        this.sreg = 0x00;
     }
 }
