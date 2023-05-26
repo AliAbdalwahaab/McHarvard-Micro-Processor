@@ -32,4 +32,13 @@ public class InstructionMemory {
         }
         return r;
     }
+
+    public void printInstructions() {
+        System.out.println("=====================================");
+        System.out.println("Instruction Memory Contents:");
+        for (int i = 0; i < instructions.length; i++) {
+            System.out.println("Address " + i + ": " + instructions[i] + " (" + String.format("%16s", Integer.toBinaryString(instructions[i] & 0xFFFF)).replace(' ', '0') + ")");
+        }
+        System.out.println("=====================================");
+    }
 }

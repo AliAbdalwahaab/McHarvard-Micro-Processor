@@ -102,6 +102,7 @@ public class Processor {
             alu.setOpcode((byte)ExecData[0]);
             alu.setOperands((byte)ExecData[1], (byte)ExecData[2]);
             short result = alu.getResult();
+            sreg = alu.sreg;
 
             // flush if opcode is a branch
             if (ExecData[0] == 4) {
@@ -165,12 +166,13 @@ public class Processor {
             fetch();
             decode();
             execute();
+            System.out.println(sreg);
+            System.out.println("PC: " + pc.getAddress());
             cycles++;
         }
         registerFile.printRegisters();
         dataMemory.printData();
-        System.out.println("PC: " + pc.getAddress());
-        System.out.println(sreg);
+        instructionMemory.printInstructions();
     }
 
 //    public void flushFetchDecode() { // for branch and jr
