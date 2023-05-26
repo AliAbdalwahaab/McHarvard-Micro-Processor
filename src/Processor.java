@@ -62,6 +62,9 @@ public class Processor {
             // use operands and opcode to execute instruction
 
             // get result from ALU and act accordingly
+
+            // flush if opcode is a branch or jr
+
         }
     }
 
@@ -79,6 +82,9 @@ public class Processor {
         currInstruction = -1;
         op1 = false;
         op2 = false;
+        opcode = -1;
+        operand1 = -1;
+        operand2 = -1;
     }
 
     public short parseAssemblyLine(String assemblyLine) {
