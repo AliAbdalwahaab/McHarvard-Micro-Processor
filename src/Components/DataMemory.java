@@ -38,4 +38,13 @@ public class DataMemory {
         }
         return r;
     }
+
+    public void printData() {
+        System.out.println("=====================================");
+        System.out.println("Data Memory Contents:");
+        for (int i = 0; i < data.length; i++) {
+            System.out.println("Address " + i + ": " + data[i]);
+        }
+        System.out.println("=====================================");
+    }
 }

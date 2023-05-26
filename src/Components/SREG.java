@@ -82,4 +82,8 @@ public class SREG {
     public void nullifyRegister() {
         this.sreg = 0x00;
     }
+
+    public String toString() {
+        return "SREG: " + Integer.toBinaryString(sreg);
+    }
 }

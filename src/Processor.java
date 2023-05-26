@@ -1,7 +1,7 @@
 import Components.*;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+
+import java.io.*;
+import java.util.Vector;
 
 public class Processor {
     ALU alu;
@@ -23,6 +23,7 @@ public class Processor {
         this.instructionMemory = new InstructionMemory();
         this.cycles = 1;
         this.lastInstruction = false;
+        this.PLNRegsBus = new PLNRegsBus();
     }
 
     public void fetch() {
@@ -33,8 +34,14 @@ public class Processor {
             PLNRegsBus.insertIntoPlnInstructions((short) -1);
 
         } else if (currAddress <= instructionMemory.getInstrCount() - 1) { // pipeline stall [ending cycles]
+            System.out.println("Fetching instruction at address " + currAddress + " from instruction memory.");
             short currInstruction = instructionMemory.getInstruction(currAddress);
-            PLNRegsBus.insertIntoPlnInstructions(currInstruction);
+            System.out.println("Instruction: " + currInstruction);
+            if (currInstruction == 0xFFFF) {
+                PLNRegsBus.insertIntoPlnInstructions((short) -1);
+            } else {
+                PLNRegsBus.insertIntoPlnInstructions(currInstruction);
+            }
             pc.increment();
         }
     }
@@ -46,30 +53,32 @@ public class Processor {
         byte operand2 = (byte) 0;
 
         if (currInstruction != -1) { // TODO pipeline stall [TBD starting and ending cycles]
+            System.out.println("Decoding instruction " + currInstruction + ".");
             // decode instruction
             opcode = (byte) (currInstruction >>> 12 & 0xF);
 
             // Operand 1 is always a register
             operand1 = (byte) (currInstruction >>> 6 & 0x3F);
             registerFile.setReadReg1(operand1);
-            operand1 = registerFile.getReadData1();
+            byte operand1RES = registerFile.getReadData1();
 
             // Operand 2 is either a register or an immediate value
             operand2 = (byte) (currInstruction & 0x3F);
+            byte operand2RES = operand2;
             if ((opcode >= 0 && opcode <= 2) || (opcode >= 5 && opcode <= 7)) { // R-Type
                 registerFile.setReadReg2(operand2);
-                operand2 = registerFile.getReadData2();
+                operand2RES = registerFile.getReadData2();
             }
 
             // set operand1, operand2, opcode in ALU
-            alu.setOpcode(opcode);
-            alu.setOperands(operand1, operand2);
+            //alu.setOpcode(opcode);
+            //alu.setOperands(operand1RES, operand2RES);
 
             // set operands and opcode in PLNRegsBus
-            PLNRegsBus.setDecodeOperands(opcode, operand1, operand2);
+            PLNRegsBus.setDecodeOperands(opcode, operand1RES, operand2RES, operand1, operand2);
         } else if (PLNRegsBus.getExecuteInstruction() != -1) {
             // shift to Exec stage
-            PLNRegsBus.setDecodeOperands(opcode, operand1, operand2);
+            PLNRegsBus.setDecodeOperands(opcode, (byte) -1, (byte) -1, (byte) 0, (byte)0);
         }
     }
 
@@ -77,8 +86,15 @@ public class Processor {
         short currInstruction = PLNRegsBus.getExecuteInstruction();
 
         if (currInstruction != -1) { // TODO pipeline stall [TBD starting cycles]
+            System.out.println("Executing instruction " + currInstruction + ".");
+
+
             // use operands and opcode to execute instruction
             byte[] ExecData = PLNRegsBus.getExecuteData();
+
+            System.out.println("Opcode: " + ExecData[0]);
+            System.out.println("Operand 1: " + ExecData[1]);
+            System.out.println("Operand 2: " + ExecData[2]);
 
             // get result from ALU and act accordingly
             alu.setOpcode(ExecData[0]);
@@ -104,20 +120,22 @@ public class Processor {
                 switch (ExecData[0]) {
                     case 0, 1, 2, 3, 5, 6, 8, 9: // ADD
                          registerFile.setRegWrite(true);
-                         registerFile.setWriteData(ExecData[1], (byte) result);
+                         registerFile.setWriteData(ExecData[3], (byte) result);
                          registerFile.setRegWrite(false);
+                        System.out.println("R"+ExecData[3]+" value changed to " + result + ".");
                         break;
                     case 10: // LB
                         dataMemory.getData((byte) result);
                         registerFile.setRegWrite(true);
-                        registerFile.setWriteData(ExecData[1], (byte) result);
+                        registerFile.setWriteData(ExecData[3], (byte) result);
                         registerFile.setRegWrite(false);
                         break;
                     case 11: // SB
-                        registerFile.setReadReg1(ExecData[1]);
+                        registerFile.setReadReg1(ExecData[3]);
                         dataMemory.setMemWrite(true);
                         dataMemory.setData((byte) result, (byte) registerFile.getReadData1());
                         dataMemory.setMemWrite(false);
+                        System.out.println("Memory address " + result + " changed to " + registerFile.getReadData1() + ".");
                         break;
                 }
             }
@@ -132,12 +150,17 @@ public class Processor {
 
     public void executeProgram() {
         while (!lastInstruction) {
+            System.out.println("--------------------------------------------------");
             System.out.println("Cycle: " + cycles);
             fetch();
             decode();
             execute();
             cycles++;
         }
+        registerFile.printRegisters();
+        dataMemory.printData();
+        System.out.println("PC: " + pc.getAddress());
+        System.out.println(sreg);
     }
 
 //    public void flushFetchDecode() { // for branch and jr
@@ -167,14 +190,16 @@ public class Processor {
             case "SRC":instruction = (short) (instruction | (0x9 << 12));break;
             case "LB":instruction = (short) (instruction | (0xA << 12));break;
             case "SB":instruction = (short) (instruction | (0xB << 12));break;
+            case "NOP":instruction = (short) 0xFFFF; return instruction;
         }
 
         // operand 1
         instruction = (short) (instruction | ((Byte.parseByte(split[1].substring(1)) & 0x3F) << 6));
 
-        // operand 2
+
         byte opcode = (byte) (instruction >>> 12);
 
+        // operand 2
         if (opcode >= 8 && opcode <= 11 || opcode == 3 || opcode == 4) { // I-Type
             instruction = (short) (instruction | (Byte.parseByte(split[2]) & 0x3F));
         } else { // R-Type
@@ -193,5 +218,44 @@ public class Processor {
             short instruction = parseAssemblyLine(line);
             instructionMemory.addInstruction(instruction);
         }
+    }
+
+    public void detectAndFixHazards() throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader("src/assembly.txt"));
+        Vector<String> lines = new Vector<String>();
+        String line1 = "";
+        if (br.ready()) {
+            line1 = br.readLine();
+        }
+        String line2 = "";
+        while (br.ready()) {
+            line2 = br.readLine();
+            lines.add(line1);
+            String[] line1Split = line1.split(" ");
+            String[] line2Split = line2.split(" ");
+            if (line1Split[1].equals(line2Split[1]) || line1Split[1].equals(line2Split[2])) {
+                lines.add("NOP");
+            }
+            line1 = line2;
+        }
+
+        if (line2.length() > 0) {
+            lines.add(line2);
+        }
+
+        BufferedWriter bw = new BufferedWriter(new FileWriter("src/assembly.txt", false));
+        for (String line : lines) {
+            bw.write(line);
+            if (!line.equals(lines.lastElement()))
+                bw.newLine();
+        }
+        bw.close();
+    }
+
+    public static void main(String[] args) throws IOException {
+        Processor processor = new Processor();
+        // processor.detectAndFixHazards();
+        processor.loadAssemblyAndParse();
+        processor.executeProgram();
     }
 }
