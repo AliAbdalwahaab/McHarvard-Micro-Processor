@@ -66,6 +66,9 @@ public class Processor {
             if ((opcode >= 0 && opcode <= 2) || (opcode >= 5 && opcode <= 7)) { // R-Type
                 registerFile.setReadReg2(operand2);
                 operand2RES = registerFile.getReadData2();
+            } else {
+                operand2 = from6to8(operand2);
+                operand2RES = operand2;
             }
 
             // set operand1, operand2, opcode in ALU
@@ -131,10 +134,11 @@ public class Processor {
                         System.out.println("R"+ExecData[3]+" value changed to " + result + ".");
                         break;
                     case 10: // LB
-                        dataMemory.getData((byte) result);
+                        result = dataMemory.getData((byte) result);
                         registerFile.setRegWrite(true);
                         registerFile.setWriteData(ExecData[3], (byte) result);
                         registerFile.setRegWrite(false);
+                        System.out.println("R"+ExecData[3]+" value changed to " + result + ".");
                         break;
                     case 11: // SB
                         registerFile.setReadReg1((byte)ExecData[3]);
@@ -202,11 +206,12 @@ public class Processor {
         instruction = (short) (instruction | ((Byte.parseByte(split[1].substring(1)) & 0x3F) << 6));
 
 
-        byte opcode = (byte) (instruction >>> 12);
+        byte opcode = (byte) ((instruction >>> 12) & 0xF);
 
         // operand 2
         if (opcode >= 8 && opcode <= 11 || opcode == 3 || opcode == 4) { // I-Type
-            instruction = (short) (instruction | (Byte.parseByte(split[2]) & 0x3F));
+            byte imm = (Byte.parseByte(split[2]));
+            instruction = (short) (instruction | from8to6(imm));
         } else { // R-Type
             instruction = (short) (instruction | (Byte.parseByte(split[2].substring(1)) & 0x3F));
         }
@@ -222,6 +227,22 @@ public class Processor {
             String line = br.readLine();
             short instruction = parseAssemblyLine(line);
             instructionMemory.addInstruction(instruction);
+        }
+    }
+
+    public byte from8to6(byte b) {
+        if (b < 0) {
+            return (byte) (((b*-1) & 0x1F) | 0x20);
+        } else {
+            return (byte) (b & 0x3F);
+        }
+    }
+
+    public byte from6to8(byte b) {
+        if ((b & 0x20) == 0x20) {
+            return (byte) ((byte)(b & 0x1F) * -1);
+        } else {
+            return b;
         }
     }
 
