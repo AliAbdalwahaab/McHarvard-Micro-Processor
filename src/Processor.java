@@ -13,6 +13,7 @@ public class Processor {
     InstructionMemory instructionMemory;
     int cycles;
     boolean lastInstruction;
+    //boolean branchJump;
 
     public Processor() {
         this.alu = new ALU();
@@ -24,6 +25,7 @@ public class Processor {
         this.cycles = 1;
         this.lastInstruction = false;
         this.PLNRegsBus = new PLNRegsBus();
+        //this.branchJump = false;
     }
 
     public void fetch() {
@@ -31,17 +33,13 @@ public class Processor {
         short currAddress = pc.getAddress();
 
         if (currAddress > instructionMemory.getInstrCount() - 1) {
-            PLNRegsBus.insertIntoPlnInstructions((short) -1);
+            PLNRegsBus.insertIntoPlnInstructions((short) -1, (short) -1);
 
         } else if (currAddress <= instructionMemory.getInstrCount() - 1) { // pipeline stall [ending cycles]
             System.out.println("Fetching instruction at address " + currAddress + " from instruction memory.");
             short currInstruction = instructionMemory.getInstruction(currAddress);
             System.out.println("Instruction: " + currInstruction);
-            if (currInstruction == 0xFFFF) {
-                PLNRegsBus.insertIntoPlnInstructions((short) -1);
-            } else {
-                PLNRegsBus.insertIntoPlnInstructions(currInstruction);
-            }
+            PLNRegsBus.insertIntoPlnInstructions(currInstruction, currAddress);
             pc.increment();
         }
     }
@@ -90,30 +88,38 @@ public class Processor {
 
 
             // use operands and opcode to execute instruction
-            byte[] ExecData = PLNRegsBus.getExecuteData();
+            short[] ExecData = PLNRegsBus.getExecuteData();
 
             System.out.println("Opcode: " + ExecData[0]);
             System.out.println("Operand 1: " + ExecData[1]);
             System.out.println("Operand 2: " + ExecData[2]);
 
+            short currPC = ExecData[5];
             // get result from ALU and act accordingly
-            alu.setOpcode(ExecData[0]);
-            alu.setOperands(ExecData[1], ExecData[2]);
+            alu.setOpcode((byte)ExecData[0]);
+            alu.setOperands((byte)ExecData[1], (byte)ExecData[2]);
             short result = alu.getResult();
 
-            // flush if opcode is a branch or jr
-            if (ExecData[0] == 4 && result == 0x4F) {
-                // flush fetch and decode
-                PLNRegsBus.flushFetchDecode();
+            // flush if opcode is a branch
+            if (ExecData[0] == 4) {
+
                 // set PC to result
-                pc.setAddress(alu.ALUAdder(pc.getAddress(), (byte) result));
+                pc.setAddress(alu.ALUAdder(currPC, (byte) result));
+                System.out.println("PC set to " + pc.getAddress() + ".");
+
+                // flush fetch and decode
+                PLNRegsBus.flushDecodeAndFetch();
+                //branchJump = true;
             }
 
             else if (ExecData[0] == 7) {
-                // flush fetch and decode
-                PLNRegsBus.flushFetchDecode();
                 // set PC to result
                 pc.setAddress(result);
+                System.out.println("PC set to " + pc.getAddress() + ".");
+
+                // flush fetch and decode
+                PLNRegsBus.flushDecodeAndFetch();
+                //branchJump = true;
             }
 
             else {
@@ -131,7 +137,7 @@ public class Processor {
                         registerFile.setRegWrite(false);
                         break;
                     case 11: // SB
-                        registerFile.setReadReg1(ExecData[3]);
+                        registerFile.setReadReg1((byte)ExecData[3]);
                         dataMemory.setMemWrite(true);
                         dataMemory.setData((byte) result, (byte) registerFile.getReadData1());
                         dataMemory.setMemWrite(false);
@@ -143,7 +149,7 @@ public class Processor {
             //check for last instruction to insert -1 and terminate
             if (currInstruction == instructionMemory.getInstruction((short) (instructionMemory.getInstrCount() - 1))) {
                 lastInstruction = true;
-                PLNRegsBus.insertIntoPlnInstructions((short)-1);
+                PLNRegsBus.insertIntoPlnInstructions((short) -1, (short) -1);
             }
         }
     }
@@ -190,7 +196,6 @@ public class Processor {
             case "SRC":instruction = (short) (instruction | (0x9 << 12));break;
             case "LB":instruction = (short) (instruction | (0xA << 12));break;
             case "SB":instruction = (short) (instruction | (0xB << 12));break;
-            case "NOP":instruction = (short) 0xFFFF; return instruction;
         }
 
         // operand 1

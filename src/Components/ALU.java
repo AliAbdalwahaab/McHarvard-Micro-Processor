@@ -63,7 +63,7 @@ public class ALU {
                 if (operand1 == 0) {
                     result = (short) (operand2);
                 } else {
-                    result = 0x4F;
+                    result = 0;
                 }
                 break;
 

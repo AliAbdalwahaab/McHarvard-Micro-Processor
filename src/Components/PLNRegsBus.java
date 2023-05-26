@@ -7,21 +7,27 @@ public class PLNRegsBus {
     public static byte[] plnOp2 = new byte[2];
     public static byte[] plnOp1Reg = new byte[2];
     public static byte[] plnOp2Reg = new byte[2];
+    public static short[] pcs = new short[3];
 
     public PLNRegsBus(){
         plnInstructions = new short[] {-1,-1,-1};
         plnOpCodes = new byte[] {-1,-1};
         plnOp1 = new byte[] {-1,-1};
         plnOp2 = new byte[] {-1,-1};
+        pcs = new short[] {-1,-1,-1};
     }
     //Set the plnInstructions array to the current instructions present in the instruction memory
-    public void insertIntoPlnInstructions(short instruction) {
+    public void insertIntoPlnInstructions(short instruction, short pc) {
         if (plnInstructions[0] + plnInstructions[1] + plnInstructions[2] != -3){
             plnInstructions[2] = plnInstructions[1];
             plnInstructions[1] = plnInstructions[0];
             plnInstructions[0] = (short) (instruction & 0xFFFF);
+            pcs[2] = pcs[1];
+            pcs[1] = pcs[0];
+            pcs[0] = pc;
         } else {
             plnInstructions[0] = (short) (instruction & 0xFFFF);
+            pcs[0] = pc;
         }
     }
 
@@ -63,14 +69,15 @@ public class PLNRegsBus {
         }
     }
 
-    public byte[] getExecuteData(){
+    public short[] getExecuteData(){
         //return all the data needed for the current execute stage
-        return new byte[] {plnOpCodes[1], plnOp1[1], plnOp2[1], plnOp1Reg[1], plnOp2Reg[1]};
+        return new short[] {plnOpCodes[1], plnOp1[1], plnOp2[1], plnOp1Reg[1], plnOp2Reg[1], pcs[1]};
     }
 
-    public void flushFetchDecode(){
+    public void flushDecodeAndFetch(){
         plnInstructions[0] = -1;
         plnInstructions[1] = -1;
+        plnInstructions[2] = -1;
         plnOpCodes[0] = -1;
         plnOp1[0] = -1;
         plnOp2[0] = -1;
