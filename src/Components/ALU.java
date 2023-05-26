@@ -33,7 +33,7 @@ public class ALU {
 
                 //update C, V, N, S, Z flags
                 updateCFlag();
-                updateVFlag();
+                updateVFlag("+");
                 updateNFlag();
                 updateSFlag();
                 updateZFlag();
@@ -42,7 +42,7 @@ public class ALU {
             case 1: //subtract
                 result = (short) (operand1 - operand2);
                 //update V, N , S , Z flags
-                updateVFlag();
+                updateVFlag("-");
                 updateNFlag();
                 updateSFlag();
                 updateZFlag();
@@ -63,7 +63,7 @@ public class ALU {
                 if (operand1 == 0) {
                     result = (short) (operand2); //adding the +1 here depends on how we handle pc outside of this class
                 } else {
-                    result = 255;
+                    result = 0;
                 }
                 break;
 
@@ -83,11 +83,7 @@ public class ALU {
                 break;
             case 7: //JR
                 //concatenate operand1 and operand2
-                String r = "";
-                String op1 = Integer.toBinaryString(operand1);
-                String op2 = Integer.toBinaryString(operand2);
-                r = op1 + op2;
-                result = (short) Integer.parseInt(r);
+                result = (short ) (operand1 << 6 | operand2);
                 break;
             case 8: //SLC
                 //TODO: check if this is the correct eq
@@ -123,38 +119,52 @@ public class ALU {
     //methods to update flags
     private void updateCFlag() {
         //C flag
-        if (result > 255) { //equivalent to checking 9th bit
+        if ((result & 0x1FF) == 0x1FF) { // checking 9th bit
             sreg.setCarryFlag((byte) 1);
         } else {
             sreg.setCarryFlag((byte) 0);
         }
     }
 
-    private void updateVFlag() {
+    private void updateVFlag(String opr) {
+        byte carry01 = 0;
+        byte carry10 = 0;
+        switch (opr) {
+            case "+":
+                carry01 = (byte) ((((operand1 & 0x40) + (operand2 & 0x40)) & 0x80) >> 7);
+                carry10 =  (byte) (((((operand1 & 0x80) + (operand2 & 0x80)) & 0x100) >> 8) + carry01);
+                break;
+            case "-":
+                carry01 = (byte) ((((operand1 & 0x40) - (operand2 & 0x40)) & 0x80) >> 7);
+                carry10 =  (byte) (((((operand1 & 0x80) - (operand2 & 0x80)) & 0x100) >> 8) + carry01);
+                break;
+        }
+        sreg.setOverflowFlag((byte) (carry01 ^ carry10));
 
         //V flag for add
-        if (opcode == 0) {
-            if (operand1 > 0 && operand2 > 0 && result < 0) {
-                sreg.setOverflowFlag((byte) 1);
-            } else if (operand1 < 0 && operand2 < 0 && result > 0) {
-                sreg.setOverflowFlag((byte) 1);
-            } else {
-                sreg.setOverflowFlag((byte) 0);
-            }
-        } else if (opcode == 1) {
-            if (operand1 > 0 && operand2 < 0 && result < 0) {
-                sreg.setOverflowFlag((byte) 1);
-            } else if (operand1 < 0 && operand2 > 0 && result > 0) {
-                sreg.setOverflowFlag((byte) 1);
-            } else {
-                sreg.setOverflowFlag((byte) 0);
-            }
-        }
+//        if (opcode == 0) {
+//            if (operand1 > 0 && operand2 > 0 && result < 0) {
+//                sreg.setOverflowFlag((byte) 1);
+//            } else if (operand1 < 0 && operand2 < 0 && result > 0) {
+//                sreg.setOverflowFlag((byte) 1);
+//            } else {
+//                sreg.setOverflowFlag((byte) 0);
+//            }
+//        } else if (opcode == 1) {
+//            if (operand1 > 0 && operand2 < 0 && result < 0) {
+//                sreg.setOverflowFlag((byte) 1);
+//            } else if (operand1 < 0 && operand2 > 0 && result > 0) {
+//                sreg.setOverflowFlag((byte) 1);
+//            } else {
+//                sreg.setOverflowFlag((byte) 0);
+//            }
+//        }
     }
 
     private void updateNFlag() {
         //N flag
-        if (result < 0) {
+        boolean negative = (result & 0x80) == 0x80;
+        if (negative) {
             sreg.setNegativeFlag((byte) 1);
         } else {
             sreg.setNegativeFlag((byte) 0);
@@ -190,7 +200,5 @@ public class ALU {
     public void setOpcode(byte opcode) {
         this.opcode = opcode;
     }
-
-
 
 }

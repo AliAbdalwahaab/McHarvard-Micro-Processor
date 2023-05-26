@@ -14,10 +14,14 @@ public class Processor {
     int cycles;
     short currInstruction = -1;
     boolean lastInstruction = false;
+    byte opcode;
     byte operand1;
     byte operand2;
+    byte ALUresult;
     boolean op1;
     boolean op2;
+
+    // TODO: Discuss BUS Component holds 3 diff versions of {instruction, decode_data, execute}
 
     public Processor() {
         this.alu = new ALU();
@@ -49,7 +53,7 @@ public class Processor {
             // decode instruction
 
 
-            // store operands
+            // set operand1, operand2, opcode in ALU
         }
     }
 
@@ -57,7 +61,7 @@ public class Processor {
         if (op1) { // TODO pipeline stall [TBD starting cycles]
             // use operands and opcode to execute instruction
 
-            // store result in register
+            // get result from ALU and act accordingly
         }
     }
 
@@ -69,6 +73,12 @@ public class Processor {
             execute();
             cycles++;
         }
+    }
+
+    public void flushFetchDecode() { // for branch and jr
+        currInstruction = -1;
+        op1 = false;
+        op2 = false;
     }
 
     public short parseAssemblyLine(String assemblyLine) {
@@ -107,8 +117,6 @@ public class Processor {
         return instruction;
 
     }
-
-
 
     public void loadAssemblyAndParse() throws IOException {
         // load assembly code from text file
