@@ -61,9 +61,9 @@ public class ALU {
 
             case 4: //branch if equal zero
                 if (operand1 == 0) {
-                    result = (short) (operand2); //adding the +1 here depends on how we handle pc outside of this class
+                    result = (short) (operand2);
                 } else {
-                    result = 0;
+                    result = 0x4F;
                 }
                 break;
 
@@ -83,11 +83,12 @@ public class ALU {
                 break;
             case 7: //JR
                 //concatenate operand1 and operand2
-                result = (short ) (operand1 << 6 | operand2);
+                result = (short) (operand1 << 6 | operand2);
                 break;
+
             case 8: //SLC
                 //TODO: check if this is the correct eq
-                result = (short) (operand1 << operand2 | operand1 >>> (8 - operand2));
+                result = (short) ((operand1 << operand2 | operand1 >>> (8 - operand2)) & 0xFF);
                 //updta N, Z flags
                 updateNFlag();
                 updateZFlag();
@@ -95,7 +96,7 @@ public class ALU {
                 break;
             case 9: //SRC
                 //TODO: check if this is the correct eq
-                result = (short) (operand1 >>> operand2 | operand1 << (8 - operand2));
+                result = (short) ((operand1 >>> operand2 | operand1 << (8 - operand2)) & 0xFF);
                 //update N, Z flags
                 updateNFlag();
                 updateZFlag();
@@ -186,7 +187,7 @@ public class ALU {
     }
 
     //will be used to compute new value of pc in case of branch or jr
-    public static short ALUAdder(short pc, byte imm) {
+    public short ALUAdder(short pc, byte imm) {
         return (short) (pc + imm);
     }
 

@@ -6,20 +6,14 @@ import java.io.IOException;
 
 public class Processor {
     ALU alu;
+    PLNRegsBus PLNRegsBus;
     RegisterFile registerFile;
     PC pc;
     SREG sreg;
     DataMemory dataMemory;
     InstructionMemory instructionMemory;
     int cycles;
-    short currInstruction = -1;
     boolean lastInstruction = false;
-    byte opcode;
-    byte operand1;
-    byte operand2;
-    byte ALUresult;
-    boolean op1;
-    boolean op2;
 
     // TODO: Discuss BUS Component holds 3 diff versions of {instruction, decode_data, execute}
 
@@ -31,26 +25,32 @@ public class Processor {
         this.dataMemory = new DataMemory();
         this.instructionMemory = new InstructionMemory();
         this.cycles = 1;
-        this.op1 = false;
-        this.op2 = false;
         this.lastInstruction = false;
-        this.currInstruction = -1;
     }
 
     public void fetch() {
         // fetch instruction from instruction memory
         short currAddress = pc.getAddress();
-        if (currAddress == instructionMemory.getInstrCount() - 1) { // last instruction
-            lastInstruction = true;
+
+        if (currAddress >= instructionMemory.getInstrCount()) {
+            PLNRegsBus.insertIntoPlnInstructions((short)-1);
         }
 
-        if (currAddress < instructionMemory.getInstrCount()) { // pipeline stall [ending cycles]
-            currInstruction = instructionMemory.getInstruction(currAddress);
+        else if (currAddress < instructionMemory.getInstrCount()) { // pipeline stall [ending cycles]
+            short currInstruction = instructionMemory.getInstruction(currAddress);
+            PLNRegsBus.insertIntoPlnInstructions(currInstruction);
             pc.increment();
         }
+
+
     }
 
     public void decode() {
+        short currInstruction = PLNRegsBus.getDecodeInstruction();
+        byte opcode = (byte) 0;
+        byte operand1 = (byte) 0;
+        byte operand2 = (byte) 0;
+
         if (currInstruction != -1) { // TODO pipeline stall [TBD starting and ending cycles]
             // decode instruction
             opcode = (byte) (currInstruction >>> 12 & 0xF);
@@ -70,22 +70,69 @@ public class Processor {
             // set operand1, operand2, opcode in ALU
             alu.setOpcode(opcode);
             alu.setOperands(operand1, operand2);
-
-            // pipline stall markers [TBD starting cycles]
-            op1 = true;
-            op2 = true;
         }
     }
 
     public void execute() {
-        if (op1) { // TODO pipeline stall [TBD starting cycles]
+        short currInstruction = PLNRegsBus.getExecuteInstruction();
+
+        if (currInstruction != -1) { // TODO pipeline stall [TBD starting cycles]
             // use operands and opcode to execute instruction
+            byte[] ExecData = PLNRegsBus.getExecuteData();
 
             // get result from ALU and act accordingly
+            alu.setOpcode(ExecData[0]);
+            alu.setOperands(ExecData[1], ExecData[2]);
+            short result = alu.getResult();
 
             // flush if opcode is a branch or jr
+            if (ExecData[0] == 4 && result == 0x4F) {
+                // flush fetch and decode
+                PLNRegsBus.flushFetchDecode();
+                // set PC to result
+                pc.setAddress(alu.ALUAdder( pc.getAddress(),(byte) result));
+            }
+
+            else if (ExecData[0] == 7) {
+                // flush fetch and decode
+                PLNRegsBus.flushFetchDecode();
+                // set PC to result
+                pc.setAddress(result);
+            }
+
+            else {
+                switch (ExecData[0]) {
+                    case 0, 1, 2, 3, 5, 6, 8, 9: // ADD
+                         registerFile.setRegWrite(true);
+                         registerFile.setWriteData(ExecData[1], (byte) result);
+                         registerFile.setRegWrite(false);
+                        break;
+
+                    case 10: // LB
+                        dataMemory.getData((byte) result);
+                        registerFile.setRegWrite(true);
+                        registerFile.setWriteData(ExecData[1], (byte) result);
+                        registerFile.setRegWrite(false);
+                        break;
+
+                    case 11: // SB
+                        registerFile.setReadReg1(ExecData[1]);
+                        dataMemory.setMemWrite(true);
+                        dataMemory.setData((byte) result, (byte) registerFile.getReadData1());
+                        dataMemory.setMemWrite(false);
+                        break;
+                }
+            }
+
+            //check for last instruction to insert -1 and terminate
+            if (currInstruction == instructionMemory.getInstruction((short) (instructionMemory.getInstrCount() - 1))) {
+                lastInstruction = true;
+                PLNRegsBus.insertIntoPlnInstructions((short)-1);
+            }
+
 
         }
+
     }
 
     public void executeProgram() {
@@ -98,14 +145,13 @@ public class Processor {
         }
     }
 
-    public void flushFetchDecode() { // for branch and jr
-        currInstruction = -1;
-        op1 = false;
-        op2 = false;
-        opcode = -1;
-        operand1 = -1;
-        operand2 = -1;
-    }
+//    public void flushFetchDecode() { // for branch and jr
+//        op1 = false;
+//        op2 = false;
+//        opcode = -1;
+//        operand1 = -1;
+//        operand2 = -1;
+//    }
 
     public short parseAssemblyLine(String assemblyLine) {
 
