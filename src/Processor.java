@@ -33,6 +33,8 @@ public class Processor {
         this.cycles = 1;
         this.op1 = false;
         this.op2 = false;
+        this.lastInstruction = false;
+        this.currInstruction = -1;
     }
 
     public void fetch() {
@@ -51,9 +53,27 @@ public class Processor {
     public void decode() {
         if (currInstruction != -1) { // TODO pipeline stall [TBD starting and ending cycles]
             // decode instruction
+            opcode = (byte) (currInstruction >>> 12 & 0xF);
 
+            // Operand 1 is always a register
+            operand1 = (byte) (currInstruction >>> 6 & 0x3F);
+            registerFile.setReadReg1(operand1);
+            operand1 = registerFile.getReadData1();
+
+            // Operand 2 is either a register or an immediate value
+            operand2 = (byte) (currInstruction & 0x3F);
+            if ((opcode >= 0 && opcode <= 2) || (opcode >= 5 && opcode <= 7)) { // R-Type
+                registerFile.setReadReg2(operand2);
+                operand2 = registerFile.getReadData2();
+            }
 
             // set operand1, operand2, opcode in ALU
+            alu.setOpcode(opcode);
+            alu.setOperands(operand1, operand2);
+
+            // pipline stall markers [TBD starting cycles]
+            op1 = true;
+            op2 = true;
         }
     }
 
