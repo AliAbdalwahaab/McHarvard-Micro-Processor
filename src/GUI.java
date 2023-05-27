@@ -310,6 +310,8 @@ public class GUI  {
 					logTextBox.setText(processor.log);
 				}
 			});
+
+			window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		}
 
 	}
