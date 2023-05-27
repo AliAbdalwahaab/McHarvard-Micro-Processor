@@ -86,4 +86,8 @@ public class SREG {
     public String toString() {
         return "SREG: " + sreg + " (" + String.format("%8s", Integer.toBinaryString(sreg & 0xFF)).replace(' ', '0') + ")";
     }
+
+    public String guiText() {
+        return ""+ sreg + " (" + String.format("%8s", Integer.toBinaryString(sreg & 0xFF)).replace(' ', '0') + ")";
+    }
 }

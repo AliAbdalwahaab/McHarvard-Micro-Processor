@@ -13,6 +13,8 @@ public class Processor {
     InstructionMemory instructionMemory;
     int cycles;
     boolean lastInstruction;
+    String log;
+
     //boolean branchJump;
 
     public Processor() {
@@ -37,8 +39,10 @@ public class Processor {
 
         } else if (currAddress <= instructionMemory.getInstrCount() - 1) { // pipeline stall [ending cycles]
             System.out.println("Fetching instruction at address " + currAddress + " from instruction memory.");
+            log += "Fetching instruction at address " + currAddress + " from instruction memory.\n";
             short currInstruction = instructionMemory.getInstruction(currAddress);
             System.out.println("Instruction: " + currInstruction);
+            log += "Instruction: " + currInstruction + "\n";
             PLNRegsBus.insertIntoPlnInstructions(currInstruction, currAddress);
             pc.increment();
         }
@@ -52,6 +56,7 @@ public class Processor {
 
         if (currInstruction != -1) { // TODO pipeline stall [TBD starting and ending cycles]
             System.out.println("Decoding instruction " + currInstruction + ".");
+            log += "Decoding instruction " + currInstruction + ".\n";
             // decode instruction
             opcode = (byte) (currInstruction >>> 12 & 0xF);
 
@@ -88,14 +93,19 @@ public class Processor {
 
         if (currInstruction != -1) { // TODO pipeline stall [TBD starting cycles]
             System.out.println("Executing instruction " + currInstruction + ".");
+            log += "Executing instruction " + currInstruction + ".\n";
+
 
 
             // use operands and opcode to execute instruction
             short[] ExecData = PLNRegsBus.getExecuteData();
 
             System.out.println("Opcode: " + ExecData[0]);
+            log += "Opcode: " + ExecData[0] + ".\n";
             System.out.println("Operand 1: " + ExecData[1]);
+            log += "Operand 1: " + ExecData[1] + ".\n";
             System.out.println("Operand 2: " + ExecData[2]);
+            log += "Operand 2: " + ExecData[2] + ".\n";
 
             short currPC = ExecData[5];
             // get result from ALU and act accordingly
@@ -110,6 +120,7 @@ public class Processor {
                 // set PC to result
                 pc.setAddress(alu.ALUAdder(currPC, (byte) result));
                 System.out.println("PC set to " + pc.getAddress() + ".");
+                log += "PC set to " + pc.getAddress() + ".\n";
 
                 // flush fetch and decode
                 PLNRegsBus.flushDecodeAndFetch();
@@ -120,6 +131,8 @@ public class Processor {
                 // set PC to result
                 pc.setAddress(result);
                 System.out.println("PC set to " + pc.getAddress() + ".");
+                log += "PC set to " + pc.getAddress() + ".\n";
+
 
                 // flush fetch and decode
                 PLNRegsBus.flushDecodeAndFetch();
@@ -133,6 +146,7 @@ public class Processor {
                          registerFile.setWriteData(ExecData[3], (byte) result);
                          registerFile.setRegWrite(false);
                         System.out.println("R"+ExecData[3]+" value changed to " + result + ".");
+                        log += "R"+ExecData[3]+" value changed to " + result + ".\n";
                         break;
                     case 10: // LB
                         result = dataMemory.getData((byte) result);
@@ -140,6 +154,7 @@ public class Processor {
                         registerFile.setWriteData(ExecData[3], (byte) result);
                         registerFile.setRegWrite(false);
                         System.out.println("R"+ExecData[3]+" value changed to " + result + ".");
+                        log += "R"+ExecData[3]+" value changed to " + result + ".\n";
                         break;
                     case 11: // SB
                         registerFile.setReadReg1((byte)ExecData[3]);
@@ -147,6 +162,7 @@ public class Processor {
                         dataMemory.setData((byte) result, (byte) registerFile.getReadData1());
                         dataMemory.setMemWrite(false);
                         System.out.println("Memory address " + result + " changed to " + registerFile.getReadData1() + ".");
+                        log += "Memory address " + result + " changed to " + registerFile.getReadData1() + ".\n";
                         break;
                 }
             }
@@ -162,12 +178,47 @@ public class Processor {
     public void executeProgram() {
         while (!lastInstruction) {
             System.out.println("--------------------------------------------------");
+            log += "--------------------------------------------------\n";
             System.out.println("Cycle: " + cycles);
+            log += "Cycle: " + cycles + "\n";
             fetch();
             decode();
             execute();
             System.out.println(sreg);
             System.out.println("PC: " + pc.getAddress());
+            log += "PC: " + pc.getAddress() + "\n";
+            cycles++;
+        }
+        registerFile.printRegisters();
+        dataMemory.printData();
+        instructionMemory.printInstructions();
+    }
+
+    public void reset() {
+        this.alu = new ALU();
+        this.registerFile = new RegisterFile();
+        this.pc = new PC();
+        this.sreg = new SREG();
+        this.dataMemory = new DataMemory();
+        this.instructionMemory = new InstructionMemory();
+        this.cycles = 1;
+        this.lastInstruction = false;
+        this.PLNRegsBus = new PLNRegsBus();
+        this.log = "";
+    }
+
+    public void step() {
+        if (!lastInstruction) {
+            System.out.println("--------------------------------------------------");
+            log += "--------------------------------------------------\n";
+            System.out.println("Cycle: " + cycles);
+            log += "Cycle: " + cycles + "\n";
+            fetch();
+            decode();
+            execute();
+            System.out.println(sreg);
+            System.out.println("PC: " + pc.getAddress());
+            log += "PC: " + pc.getAddress() + "\n";
             cycles++;
         }
         registerFile.printRegisters();
@@ -223,6 +274,7 @@ public class Processor {
     }
 
     public void loadAssemblyAndParse() throws IOException {
+        log = "";
         // load assembly code from text file
         BufferedReader br = new BufferedReader(new FileReader("src/assembly.txt"));
         while (br.ready()) {
@@ -285,5 +337,6 @@ public class Processor {
         // processor.detectAndFixHazards();
         processor.loadAssemblyAndParse();
         processor.executeProgram();
+        //processor.gui.setVisible(true);
     }
 }

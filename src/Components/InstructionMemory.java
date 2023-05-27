@@ -26,9 +26,9 @@ public class InstructionMemory {
     }
 
     public String toString() {
-        String r = "Instruction Memory Contents:\n";
+        String r = "";
         for (int i = 0; i < instructions.length; i++) {
-            r += "Address: "+i+", Value: "+instructions[i]+"\n";
+            r += "Address: "+i+": "+instructions[i]+"\n";
         }
         return r;
     }

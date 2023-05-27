@@ -32,9 +32,9 @@ public class DataMemory {
     }
 
     public String toString() {
-        String r = "Data Memory Contents:\n";
+        String r = "";
         for (int i = 0; i < data.length; i++) {
-            r += "Address: "+i+", Value: "+data[i]+"\n";
+            r += "Address: "+i+ ": "+data[i]+"\n";
         }
         return r;
     }

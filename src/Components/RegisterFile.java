@@ -44,4 +44,12 @@ public class RegisterFile {
         }
         System.out.println("=====================================");
     }
+
+    public String toString() {
+        String r = "";
+        for (int i = 0; i < registers.length; i++) {
+            r += "R" + i + ": " +registers[i]+"\n";
+        }
+        return r;
+    }
 }

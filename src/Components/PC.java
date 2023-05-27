@@ -18,4 +18,9 @@ public class PC {
     public String toString() {
         return "PC: " + address;
     }
+
+    public String guiText() {
+        return  "" + address;
+    }
+
 }
