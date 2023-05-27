@@ -47,6 +47,8 @@ public class GUI  {
 		{
 			Container windowContentPane = window.getContentPane();
 
+			window.setTitle("McHarvard Assembly Simulator");
+
 			//======== scrollPane1 ========
 			{
 				scrollPane1.setViewportView(codeTextBox);
